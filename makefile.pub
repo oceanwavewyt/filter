@@ -1,0 +1,26 @@
+CC:=g++
+CXX:=g++
+DEBUG=DEBUG
+OUTPUTNAME:=riser
+OUTPATH=output
+ROOT=./include/
+INCLUDES += -I$(ROOT) -I/usr/include/ -L./lib/
+
+LDFLAGS += -lpthread -levhttp -lev
+CPPFLAGS += -g -fPIC -pg -Wall
+OS := $(shell uname -s)
+IS_DARWIN := $(shell echo $(OS)|grep -i Darwin)
+ifdef IS_DARWIN
+LDFLAGS += -D_DARWIN
+endif
+
+objects := $(patsubst %.cpp,%.o,$(wildcard *.cpp))
+
+.PHONY: all clean
+all: $(OBJNAME)
+
+%.o:%.cpp
+	$(CXX) $(CPPFLAGS) -c $< -o $@ $(INCLUDES) -D$(DEBUG)
+
+clean:
+	-rm -f $(OUTPUTNAME) $(objects)

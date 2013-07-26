@@ -10,11 +10,8 @@
 //  Copyright (c) 2013年 wyt. All rights reserved.
 //
 
-#include "gent_find.h"
-#include "gent_config.h"
-#include "gent_frame.h"
-#include "gent_app_mgr.h"
-#include "gent_util.h"
+#include "FilterSearch.h"
+
 #include <fstream>
 
 GentFindMgr *GentFindMgr::intance_ = NULL;
@@ -173,7 +170,7 @@ void GentFindMgr::Init() {
         //oneLine[strlen(oneLine)]='\0';
 
         string iterm(oneLine, strlen(oneLine));
-        iterm = GentUtil::Trim(iterm);
+       // iterm = GentUtil::Trim(iterm);
         char abc[120]={0};
         memcpy(abc,iterm.c_str(),iterm.size());
         wchar_t tmp[bufsize];

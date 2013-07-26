@@ -8,7 +8,33 @@
 
 #ifndef riser_gent_find_h
 #define riser_gent_find_h
-#include "prefine.h"
+#include <stdio.h>
+#include <stdarg.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/un.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <inttypes.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <signal.h>
+#include<ctype.h>
+#include <pthread.h>
+#include <assert.h>
+
+#include <map>
+#include <iostream>
+#include <vector>
+#include <list>
+
+typedef unsigned char byte;
+using namespace std;
 
 typedef struct nodes{
     int base;
