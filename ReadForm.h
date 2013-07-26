@@ -76,6 +76,9 @@ public:
         bodyParams.getNames(bnames);
         for(vector<const char*>::const_iterator it = bnames.begin(); it != bnames.end(); it++){
             resp.write(*it);
+			if(strncmp(*it, "content",7)==0) {
+					std::cout << *it << " yes" << std::endl;
+			}
             resp.write("=");
             vector<const char*> pvalues;
             bodyParams.gets(*it, pvalues);
