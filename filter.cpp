@@ -64,11 +64,11 @@ int main(int argc, char** argv) {
     TestHttpServletFactory servletFactory;
     HttpServer httpServer(SERVER_PORT, &servletFactory, &config);
     
+   	GentFindMgr::Instance()->Init(); 
     //启动HttpServer
     if(!httpServer.start()){
         return 1;
     }
-   	GentFindMgr::Instance()->Init(); 
     //进入EV事件循环
     HttpServer::loop();
     

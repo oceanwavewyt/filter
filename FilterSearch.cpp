@@ -148,8 +148,6 @@ long GentFindMgr::GetEncode(const char *key, int base_val, int is_asc)
 
 
 void GentFindMgr::Init() {
-	cout << "GentFindMgr::Init" << endl;
-    
 	nodestable = (node**)GentFindUtil::Gmalloc(length*sizeof(node *));
 	memset(nodestable,0,length*sizeof(node *));   
 	nodestable[0] = NodeSet(1,1,0,"",0);
@@ -189,8 +187,9 @@ void GentFindMgr::Init() {
 		fin >> st;
         str+=st;
 	}
-   	cout << "file data:" << str << endl; 
-    f.RemoveChar(str);
+   	cout << "file data:" << str << endl;
+	std::vector<string> ret; 
+    f.Search(str, ret);
 	fin.close();
 	
 	//vector<string> v;
@@ -431,17 +430,7 @@ void GentFindMgr::ItemCreate(wchar_t *name,size_t name_len)
 		}
          c.push_back(parent);
 	}
-    /*
-    for(size_t j=0;j<c.size(); j++){
-        cout << "parent:" << nodestable[c[j]]->name << "\t" << c[j] << endl;
-        cout << "child:" << nodestats[c[j]].size() << endl;
-        for(size_t k=0;k<nodestats[c[j]].size(); k++) {
-            int a = nodestats[c[j]][k];
-            cout << "cj: "<<a << endl;
-        }
-    }
-    */
-
+    
 	nodestable[parent]->is_word = 1;                                   
 
 }
@@ -527,46 +516,35 @@ void GentFind::stack_pop() {
 	stack_free();
 }
 
-void GentFind::RemoveChar(string &str) {
-    setlocale(LC_ALL, "zh_CN.UTF-8");
+void GentFind::Search(string &str, std::vector<string> &ret) {
 	string special[4] = {"\t"," ","\r"};
     string rep = "\n";
     for(int i=0; i<4; i++) {
         size_t pos=0;
         while((pos = str.find_first_of(special[i], pos))!=string::npos) {
-            cout << "pos:" << pos<< endl;
             str.replace(pos, 1, rep);
             pos += 1;
         }
     }
-	cout << "str:" << str << endl;
-    cout << "str len:" <<  str.size() << endl;
     size_t pos = 0;
     size_t pre = 0;
     std::vector<string> str_parts;
     while((pos = str.find_first_of(rep, pos))!=string::npos) {
         string s = str.substr(pre, pos-pre);
         if(s!="" && s != rep) str_parts.push_back(s);
-        //cout << "--------------------" << endl;
-        //cout << s << endl;
-        
         pre = pos;
         pos++;
     }
     string s = str.substr(pre);
     if(s!="" && s != rep) str_parts.push_back(s);
-    
     for(size_t j=0;j<str_parts.size(); j++) {
-        //cout << "parts:" << j << " len:"<<str_parts[j].size()<<"   "<< str_parts[j]  << endl;
-        std::vector<string> ret;
-        Search(str_parts[j], ret);
-        
+        Match(str_parts[j], ret);
     }
 }
 
-int GentFind::Search(string &str, std::vector<string> &v) {
-	//cout << "GentFind::Search "<< str << endl;
-   	wchar_t *buff = (wchar_t *)GentFindUtil::Gmalloc(sizeof(wchar_t)*str.size()+1);
+int GentFind::Match(string &str, std::vector<string> &ret) {
+   	setlocale(LC_ALL, "zh_CN.UTF-8");
+	wchar_t *buff = (wchar_t *)GentFindUtil::Gmalloc(sizeof(wchar_t)*str.size()+1);
 	char *str2 = const_cast<char *>(str.c_str());
 	size_t wc_len = GentFindUtil::Charwchar(str2,str.size(),buff);
 	if(wc_len == -1) {
@@ -585,7 +563,6 @@ int GentFind::Search(string &str, std::vector<string> &v) {
 		if(*(buff+i) < 128) {
 			GentFindUtil::Wcstombs(c,2,buff+i);
 			if(strcmp(c," ") == 0){
-				printf("kong\n");
 				if(stack_s->head != NULL && GentFindMgr::Instance()->ItemAttr(index,"is_word") == 1){
 					stack_pop();
 					pos = 0;
@@ -629,7 +606,6 @@ int GentFind::Search(string &str, std::vector<string> &v) {
 			index = tindex;
 		}
 	}
-    
     if(tindex != -1) {
         if(stack_s->head != NULL && GentFindMgr::Instance()->ItemAttr(index,"is_word") == 1){
             stack_pop();
@@ -638,9 +614,8 @@ int GentFind::Search(string &str, std::vector<string> &v) {
     item_ret *ret_it = ret_s->head;
     while(ret_it) {
         printf("find: %s\n",ret_it->key);
+		ret.push_back(string(ret_it->key));
         rsize += strlen(ret_it->key);
-        //strcat(ret, ret_it->key);
-        //strcat(ret, "\n");
         rsize++;
         ret_it = ret_it->next;
     }

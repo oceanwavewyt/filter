@@ -29,43 +29,51 @@ bool ReadForm::onReadBodyEvent(const char* buff, size_t n){
 
 void ReadForm::service(Request& req, Response& resp){
 	resp.setContentType("text/html; charset=utf-8");
-
-
-	resp.write("<br>[all request headers]<br>");
-	const vector<const char*>& hnames =  req.getHeaderNames();
-	for(int i=0; i<hnames.size(); i++){
-		vector<const char*> vals;
-		req.getHeaders(hnames[i], vals);
-		for(int j=0; j<vals.size(); j++){
+	//const vector<const char*>& hnames =  req.getHeaderNames();
+	//for(int i=0; i<hnames.size(); i++){
+	//	vector<const char*> vals;
+	//	req.getHeaders(hnames[i], vals);
+	//	for(int j=0; j<vals.size(); j++){
 			//cout<<hnames[i]<<"="<<value(vals[j])<<endl;
-			resp.write(hnames[i]);
-			resp.write("=");
-			resp.write(value(vals[j]));
-			resp.write("<br>");
-		}
-	}        
+			//resp.write(hnames[i]);
+			//resp.write("=");
+			//resp.write(value(vals[j]));
+			//resp.write("<br>");
+	//	}
+	//}        
 
-	resp.write("<br>[form data]<br>");
+	//resp.write("<br>[form data]<br>");
 	vector<const char*> bnames;
 	bodyParams.getNames(bnames);
+	std::vector<string> ret;
 	for(vector<const char*>::const_iterator it = bnames.begin(); it != bnames.end(); it++){
-		resp.write(*it);
+		//resp.write(*it);
 		if(strncmp(*it, "content",7)==0) {
-			std::cout << *it << " yes" << std::endl;
+			//std::cout << *it << " yes" << std::endl;
 		}
 		string cont="";
-		resp.write("=");
+		//resp.write("=");
 		vector<const char*> pvalues;
 		bodyParams.gets(*it, pvalues);
 		for(vector<const char*>::iterator vit = pvalues.begin(); vit != pvalues.end(); vit++){
-			resp.write(value(*vit));
-			resp.write(",");
+			//resp.write(value(*vit));
+			//resp.write(",");
 			cont+=*vit;
 		}
+		string str;
+		URLDecode(cont, str);
 		GentFind f;
-		f.RemoveChar(cont); 	
-		resp.write("<br>");
+		f.Search(str, ret);
 	}
+	if(ret.size() > 0) {
+		for(size_t i=0;i<ret.size();i++) {
+			resp.write(ret[i].c_str());
+			resp.write("<br>");
+		}
+	}else{
+		resp.write("not found");
+	}
+
 }
 
 const char* ReadForm::value(const char* v){

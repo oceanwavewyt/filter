@@ -80,8 +80,8 @@ public:
 	GentFind();
 	~GentFind();
 public:
-	int Search(string &str, std::vector<string> &v);
-	void RemoveChar(string &str);
+	int Match(string &str, std::vector<string> &v);
+	void Search(string &str, std::vector<string> &v);
 private:
 	void stack_init();
 	void stack_free();	
