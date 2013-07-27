@@ -95,7 +95,7 @@ public:
 	static void *Gmalloc(size_t size);
 	static void *Gcalloc(size_t size, int len);
 	static void Gfree(void *p);
-	static int Charwchar(char *str,wchar_t *out);
+	static int Charwchar(char *str,int len, wchar_t *out);
 	static size_t Wcstombs(char *buf,int buf_size,wchar_t *str); 	
 	static size_t Len(wchar_t *str);	
 };

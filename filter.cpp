@@ -10,9 +10,11 @@
 
 //#include "HelloHttpServlet.h"
 #include "ReadForm.h"
+#include "FilterSearch.h"
 //#include "SendfileIOPumpHttpServlet.h"
 //#include "RWIOPumpHttpServlet.h"
 //#include "FileServerHttpServlet.h"
+#include <locale.h>
 
 #define SERVER_PORT 10000
 
@@ -55,7 +57,6 @@ public:
 
 
 int main(int argc, char** argv) {
-    
     Config config;
     config.workProcessCount = 8;
  
@@ -67,7 +68,7 @@ int main(int argc, char** argv) {
     if(!httpServer.start()){
         return 1;
     }
-    
+   	GentFindMgr::Instance()->Init(); 
     //进入EV事件循环
     HttpServer::loop();
     

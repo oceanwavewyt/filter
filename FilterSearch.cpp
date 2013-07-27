@@ -56,8 +56,8 @@ void GentFindUtil::Gfree(void *p) {
     }
 }
 
-int GentFindUtil::Charwchar(char *str,wchar_t *out) {
-	int ret = mbstowcs(out,str,strlen(str));
+int GentFindUtil::Charwchar(char *str,int len,wchar_t *out) {
+	int ret = mbstowcs(out,str,len);
 	if(ret == -1) {
 		printf("charwchar failed \n");  
 	}
@@ -174,32 +174,29 @@ void GentFindMgr::Init() {
         char abc[120]={0};
         memcpy(abc,iterm.c_str(),iterm.size());
         wchar_t tmp[bufsize];
-		size_t wc_len = GentFindUtil::Charwchar(abc,tmp);
+		size_t wc_len = GentFindUtil::Charwchar(abc,strlen(abc),tmp);
         //cout << "len: "<< wc_len <<endl;
 		ItemCreate(tmp,wc_len);
         //break;
 	}
 	fclose(fp);
-
+	
 	string str="";
 	GentFind f;
 	std::ifstream fin("data.txt", ios::in);
-	//char c[4096];
     string st;
 	while(!fin.eof()){
-		//fin.read(c,4096);
-		//string c2(c);
 		fin >> st;
         str+=st;
 	}
-    //cout << str << endl;
-    
+   	cout << "file data:" << str << endl; 
     f.RemoveChar(str);
 	fin.close();
+	
 	//vector<string> v;
 	//f.Search(str, v);
 
-    exit(1);
+   // exit(1);
 }
 
                                                                      
@@ -531,7 +528,8 @@ void GentFind::stack_pop() {
 }
 
 void GentFind::RemoveChar(string &str) {
-    string special[4] = {"\t"," ","\r"};
+    setlocale(LC_ALL, "zh_CN.UTF-8");
+	string special[4] = {"\t"," ","\r"};
     string rep = "\n";
     for(int i=0; i<4; i++) {
         size_t pos=0;
@@ -541,7 +539,8 @@ void GentFind::RemoveChar(string &str) {
             pos += 1;
         }
     }
-    cout << str << endl;
+	cout << "str:" << str << endl;
+    cout << "str len:" <<  str.size() << endl;
     size_t pos = 0;
     size_t pre = 0;
     std::vector<string> str_parts;
@@ -563,14 +562,13 @@ void GentFind::RemoveChar(string &str) {
         Search(str_parts[j], ret);
         
     }
-    
 }
 
 int GentFind::Search(string &str, std::vector<string> &v) {
 	//cout << "GentFind::Search "<< str << endl;
    	wchar_t *buff = (wchar_t *)GentFindUtil::Gmalloc(sizeof(wchar_t)*str.size()+1);
 	char *str2 = const_cast<char *>(str.c_str());
-	size_t wc_len = GentFindUtil::Charwchar(str2,buff);
+	size_t wc_len = GentFindUtil::Charwchar(str2,str.size(),buff);
 	if(wc_len == -1) {
 		GentFindUtil::Gfree(buff);
 		return -1;
