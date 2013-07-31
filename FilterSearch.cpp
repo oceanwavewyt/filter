@@ -146,6 +146,15 @@ long GentFindMgr::GetEncode(const char *key, int base_val, int is_asc)
     }                                                                                
 }                                                                                    
 
+void GentFindMgr::ItemAdd(string &iterm) {
+ int bufsize=120; 
+ char abc[120]={0};                                           
+ memcpy(abc,iterm.c_str(),iterm.size());                      
+ wchar_t tmp[bufsize];                                        
+ size_t wc_len = GentFindUtil::Charwchar(abc,strlen(abc),tmp);
+ //cout << "len: "<< wc_len <<endl;                           
+  ItemCreate(tmp,wc_len);                                      
+}
 
 void GentFindMgr::Init() {
 	nodestable = (node**)GentFindUtil::Gmalloc(length*sizeof(node *));
@@ -164,21 +173,12 @@ void GentFindMgr::Init() {
 	}
 	char *oneLine=(char *)malloc(sizeof(char)*bufsize);
 	while(fgets(oneLine,bufsize,fp)!=NULL){
-		//printf("%s\n",oneLine);
-        //oneLine[strlen(oneLine)]='\0';
-
         string iterm(oneLine, strlen(oneLine));
        // iterm = GentUtil::Trim(iterm);
-        char abc[120]={0};
-        memcpy(abc,iterm.c_str(),iterm.size());
-        wchar_t tmp[bufsize];
-		size_t wc_len = GentFindUtil::Charwchar(abc,strlen(abc),tmp);
-        //cout << "len: "<< wc_len <<endl;
-		ItemCreate(tmp,wc_len);
-        //break;
+     	ItemAdd(iterm);
 	}
 	fclose(fp);
-	
+	/*
 	string str="";
 	GentFind f;
 	std::ifstream fin("data.txt", ios::in);
@@ -191,11 +191,10 @@ void GentFindMgr::Init() {
 	std::vector<string> ret; 
     f.Search(str, ret);
 	fin.close();
-	
+	*/
 	//vector<string> v;
 	//f.Search(str, v);
-
-   // exit(1);
+    // exit(1);
 }
 
                                                                      
@@ -546,13 +545,13 @@ int GentFind::Match(string &str, std::vector<string> &ret) {
    	setlocale(LC_ALL, "zh_CN.UTF-8");
 	wchar_t *buff = (wchar_t *)GentFindUtil::Gmalloc(sizeof(wchar_t)*str.size()+1);
 	char *str2 = const_cast<char *>(str.c_str());
-	size_t wc_len = GentFindUtil::Charwchar(str2,str.size(),buff);
+	int wc_len = GentFindUtil::Charwchar(str2,str.size(),buff);
 	if(wc_len == -1) {
 		GentFindUtil::Gfree(buff);
 		return -1;
 	}
 	stack_init(); 
-	size_t i = 0;
+	int i = 0;
 	int index = 0;
 	int tindex;
 	int pos = 0;

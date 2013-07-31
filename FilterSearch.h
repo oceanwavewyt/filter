@@ -112,6 +112,7 @@ public:
 	GentFindMgr();
 	~GentFindMgr();
 	void Init();
+	void ItemAdd(std::string &str);
 	void ItemCreate(wchar_t *,size_t);
     int ItemSearch(char *name,int base_index,int is_asc);
 	short ItemAttr(int index,const string &field);

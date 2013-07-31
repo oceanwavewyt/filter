@@ -30,8 +30,6 @@ public:
     
 private:
     const char* value(const char* v);
-	string URLDecode(const string &sIn, string &sOut);
-	BYTE fromHex(const BYTE &x);
 };
 
 #endif	/* READFORMBODYHTTPSERVLET_H */

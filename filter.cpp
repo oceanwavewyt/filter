@@ -8,7 +8,7 @@
 #include <evhttp/Config.h>
 #include <evhttp/HttpServletFactory.h>
 
-//#include "HelloHttpServlet.h"
+#include "DealItem.h"
 #include "ReadForm.h"
 #include "FilterSearch.h"
 //#include "SendfileIOPumpHttpServlet.h"
@@ -27,7 +27,13 @@ public:
     virtual ~TestHttpServletFactory(){}
 
     virtual HttpServlet* create(const char* path){
-        return new ReadForm();
+        if(strcmp(path, "/search") == 0 || strcmp(path, "/search/") == 0){
+			return new ReadForm();
+		}
+		else if(strcmp(path, "/add") == 0 || strcmp(path, "/add/") == 0){
+   			return new DealItem();           
+		}
+
 		/*
 		if(strcmp(path, "/hello") == 0){
             return new HelloHttpServlet();
