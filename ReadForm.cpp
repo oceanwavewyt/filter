@@ -30,8 +30,9 @@ bool ReadForm::onReadBodyEvent(const char* buff, size_t n){
 
 void ReadForm::service(Request& req, Response& resp){
 	resp.setContentType("text/html; charset=utf-8");
-	/*	
+	
 	std::vector<string> ret;
+	/*	
 	const char *content = req.getParameter("content");
 	string cont2="";
 	cont2+=content;

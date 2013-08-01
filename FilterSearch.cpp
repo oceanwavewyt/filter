@@ -1,9 +1,9 @@
 //
-//  gent_list.cpp
-//  bloom filter for riser
-//  This soft wrap a serice for leveldb store, and support multi-threading    
-//  client access it by the memcache extension of php, and telnet. Currently,
-//  only support put, get and del operation. additionally, it is support bloom
+//  FilterSearch.cpp
+//  double array for filter
+//  This soft filter a lot of special charactors for an article, and support http server.    
+//  client access it by http protocol and post an article and return exists charactors,
+//  this file is the core algorithm of the soft.
 //  filter algorithm for key.
 //
 //  Created by wyt on 13-5-6.
@@ -14,19 +14,19 @@
 
 #include <fstream>
 
-GentFindMgr *GentFindMgr::intance_ = NULL;
+FilterSearchMgr *FilterSearchMgr::intance_ = NULL;
 
-GentFindMgr *GentFindMgr::Instance() {
+FilterSearchMgr *FilterSearchMgr::Instance() {
 	if(intance_ == NULL) {
-		intance_ = new GentFindMgr();
+		intance_ = new FilterSearchMgr();
 	}
 	return intance_;
 }
 
-GentFindMgr::GentFindMgr():nodestable(0),
+FilterSearchMgr::FilterSearchMgr():nodestable(0),
 	length(1000){
 }
-GentFindMgr::~GentFindMgr(){
+FilterSearchMgr::~FilterSearchMgr(){
 }
 
 void *GentFindUtil::Gmalloc(size_t size) {    
@@ -78,7 +78,7 @@ size_t GentFindUtil::Wcstombs(char *buf,int buf_size,wchar_t *str) {
 }       
 
 
-node *GentFindMgr::NodeSet(int base,int check,int account,const char *name,short is_word) { 
+node *FilterSearchMgr::NodeSet(int base,int check,int account,const char *name,short is_word) { 
 	node *it = (node *)GentFindUtil::Gcalloc(1,sizeof(node));                                      
 	it->base = base;                                                                   
 	it->check = check;                                                                 
@@ -88,7 +88,7 @@ node *GentFindMgr::NodeSet(int base,int check,int account,const char *name,short
 	return it;                                                                         
 }                                                                                      
 
-void GentFindMgr::AddExQueue(int index, int childIndex) {
+void FilterSearchMgr::AddExQueue(int index, int childIndex) {
     nodestats_t::iterator it;
     it = nodestats.find(index);
     if(it == nodestats.end()) {
@@ -100,12 +100,12 @@ void GentFindMgr::AddExQueue(int index, int childIndex) {
     }
 }
 
-void GentFindMgr::AddExQueue(int index, std::vector<int> &vt) {
+void FilterSearchMgr::AddExQueue(int index, std::vector<int> &vt) {
     if(vt.size()==0) return;
     nodestats[index] = vt;
 }
 
-void GentFindMgr::DelExQueue(int index) {
+void FilterSearchMgr::DelExQueue(int index) {
     nodestats_t::iterator it;
     it = nodestats.find(index);
     if(it == nodestats.end()) return;
@@ -137,7 +137,7 @@ void GentFindMgr::DelExQueue(int index) {
     */
 }                                                                                    
                                                                                      
-long GentFindMgr::GetEncode(const char *key, int base_val, int is_asc)                    
+long FilterSearchMgr::GetEncode(const char *key, int base_val, int is_asc)                    
 {                                                                                    
     if(is_asc == 1){                                                                 
         return base_val+(key[0]);                                                    
@@ -146,7 +146,7 @@ long GentFindMgr::GetEncode(const char *key, int base_val, int is_asc)
     }                                                                                
 }                                                                                    
 
-void GentFindMgr::ItemAdd(string &iterm) {
+void FilterSearchMgr::ItemAdd(string &iterm) {
  int bufsize=120; 
  char abc[120]={0};                                           
  memcpy(abc,iterm.c_str(),iterm.size());                      
@@ -156,7 +156,11 @@ void GentFindMgr::ItemAdd(string &iterm) {
   ItemCreate(tmp,wc_len);                                      
 }
 
-void GentFindMgr::Init() {
+uint32_t FilterSearchMgr::Init(const std::string &fileKeyName) {
+	if(access(fileKeyName.c_str(),0)==-1) {
+		cout << fileKeyName << " file not exist" << endl;
+		return 0;
+	}
 	nodestable = (node**)GentFindUtil::Gmalloc(length*sizeof(node *));
 	memset(nodestable,0,length*sizeof(node *));   
 	nodestable[0] = NodeSet(1,1,0,"",0);
@@ -164,7 +168,6 @@ void GentFindMgr::Init() {
 	//nodestats.head_ex = NULL;
     
     setlocale(LC_ALL, "zh_CN.UTF-8");
-    std::string fileKeyName="./key.txt";
 	FILE *fp;
 	int bufsize=120;
 	if((fp=fopen(fileKeyName.c_str(),"r"))==NULL){
@@ -172,12 +175,15 @@ void GentFindMgr::Init() {
 		exit(0);
 	}
 	char *oneLine=(char *)malloc(sizeof(char)*bufsize);
+	uint32_t num = 0;
 	while(fgets(oneLine,bufsize,fp)!=NULL){
         string iterm(oneLine, strlen(oneLine));
        // iterm = GentUtil::Trim(iterm);
      	ItemAdd(iterm);
+		num++;
 	}
 	fclose(fp);
+	return num;
 	/*
 	string str="";
 	GentFind f;
@@ -200,7 +206,7 @@ void GentFindMgr::Init() {
                                                                      
 
 //分配内存                                               
-void  GentFindMgr::IncreMemary(int cur_len)                   
+void  FilterSearchMgr::IncreMemary(int cur_len)                   
 {                                                        
 	int last = cur_len*2;                                
 	void *p = GentFindUtil::Gmalloc(last*sizeof(node *));            
@@ -211,7 +217,7 @@ void  GentFindMgr::IncreMemary(int cur_len)
 }                                                        
 
 //获得孩子的数目                                         
-int GentFindMgr::GetChildCount(int parent_key) {
+int FilterSearchMgr::GetChildCount(int parent_key) {
     nodestats_t::iterator it;
     it = nodestats.find(parent_key);
     if(it == nodestats.end()) {
@@ -220,7 +226,7 @@ int GentFindMgr::GetChildCount(int parent_key) {
     return nodestats[parent_key].size();
 }                                                        
 
-void GentFindMgr::GetChild(int parent_index, std::vector<int> &ret) {
+void FilterSearchMgr::GetChild(int parent_index, std::vector<int> &ret) {
 	nodestats_t::iterator it;
     it = nodestats.find(parent_index);
     if(it == nodestats.end()) {
@@ -238,7 +244,7 @@ void GentFindMgr::GetChild(int parent_index, std::vector<int> &ret) {
  *@parent_index old node index
  *@new_index new node index
  */
-void GentFindMgr::SetChildCheck(int parent_index,int new_index) {
+void FilterSearchMgr::SetChildCheck(int parent_index,int new_index) {
     //find parent_index node's child
     nodestats_t::iterator it;
     it = nodestats.find(parent_index);
@@ -262,7 +268,7 @@ void GentFindMgr::SetChildCheck(int parent_index,int new_index) {
     */
 }                                                       
 
-int GentFindMgr::GetBaseValue(int parent_index,const char *key,
+int FilterSearchMgr::GetBaseValue(int parent_index,const char *key,
                               int is_asc,std::vector<int> &child) {
     int cur_base = nodestable[parent_index]->base;
     int tmp_base = cur_base+1;                                                                     
@@ -298,7 +304,7 @@ int GentFindMgr::GetBaseValue(int parent_index,const char *key,
 	return tmp_base;                                                                               
 }                                                                                                  
 
-int GentFindMgr::MoveNode(int child_count,std::vector<int> &child,int real_base,int is_asc,
+int FilterSearchMgr::MoveNode(int child_count,std::vector<int> &child,int real_base,int is_asc,
                           int index,int parent_index) {
     int ret = index;
     std::vector<int> new_child;
@@ -329,7 +335,7 @@ int GentFindMgr::MoveNode(int child_count,std::vector<int> &child,int real_base,
 	return ret;                                                                                                              
 }                                                                                                                            
 
-long GentFindMgr::NodesConflict(long encode_t, const char *name,int index,int is_asc) {
+long FilterSearchMgr::NodesConflict(long encode_t, const char *name,int index,int is_asc) {
     //寻找节点,冲突发生                                                                                                           
     //检查t节点的check值，（查看t有多少个兄弟节点）
     //此时encode_t是新节点和index还未建立真正的父子关系
@@ -376,7 +382,7 @@ long GentFindMgr::NodesConflict(long encode_t, const char *name,int index,int is
 	return encode_t;                                                                                                              
 }
 
-int GentFindMgr::NodesAdd(char *name,int index,int is_asc) {
+int FilterSearchMgr::NodesAdd(char *name,int index,int is_asc) {
 	long encode_t = GetEncode(name,nodestable[index]->base,is_asc);
 	if(length <= encode_t ){
 		//分配内存
@@ -405,7 +411,7 @@ int GentFindMgr::NodesAdd(char *name,int index,int is_asc) {
 	return encode_t;
 }
 
-void GentFindMgr::ItemCreate(wchar_t *name,size_t name_len)
+void FilterSearchMgr::ItemCreate(wchar_t *name,size_t name_len)
 {
 	//wprintf(L"%s",name);
 	size_t len = name_len;
@@ -434,7 +440,7 @@ void GentFindMgr::ItemCreate(wchar_t *name,size_t name_len)
 
 }
 
-int GentFindMgr::ItemSearch(char *name,int base_index,int is_asc) {
+int FilterSearchMgr::ItemSearch(char *name,int base_index,int is_asc) {
 	if(nodestable[base_index] == 0) return -1;
 	int index = GetEncode(name, nodestable[base_index]->base, is_asc);
 	if(length < index) return -1;
@@ -445,7 +451,7 @@ int GentFindMgr::ItemSearch(char *name,int base_index,int is_asc) {
 	return index;
 }
 
-short GentFindMgr::ItemAttr(int index,const string &field) {
+short FilterSearchMgr::ItemAttr(int index,const string &field) {
 	if(field == "child_count"){
 	   return nodestable[index]->child_count;
 	}else if(field == "is_word") {
@@ -562,28 +568,28 @@ int GentFind::Match(string &str, std::vector<string> &ret) {
 		if(*(buff+i) < 128) {
 			GentFindUtil::Wcstombs(c,2,buff+i);
 			if(strcmp(c," ") == 0){
-				if(stack_s->head != NULL && GentFindMgr::Instance()->ItemAttr(index,"is_word") == 1){
+				if(stack_s->head != NULL && FilterSearchMgr::Instance()->ItemAttr(index,"is_word") == 1){
 					stack_pop();
 					pos = 0;
 				}
 				i++;
 				continue;
 			}
-			tindex = GentFindMgr::Instance()->ItemSearch(c,index,1);
+			tindex = FilterSearchMgr::Instance()->ItemSearch(c,index,1);
 			len = 2;
 		}else {
 			GentFindUtil::Wcstombs(c, 4, buff+i);
-			tindex = GentFindMgr::Instance()->ItemSearch(c,index,0);
+			tindex = FilterSearchMgr::Instance()->ItemSearch(c,index,0);
 			len = 4;
 		}	
 		if(tindex == -1){
 			//没有找到，检查上一个节点是否为最后一个节点
-			if(stack_s->head != NULL && GentFindMgr::Instance()->ItemAttr(index,"is_word") == 0) {
+			if(stack_s->head != NULL && FilterSearchMgr::Instance()->ItemAttr(index,"is_word") == 0) {
 				//表示上个节点不是个词组，回溯到节点的下一个字位置
 				i = pos + 1;
 				pos = 0;
 				stack_free();
-			}else if(stack_s->head != NULL && GentFindMgr::Instance()->ItemAttr(index,"is_word") == 1) {
+			}else if(stack_s->head != NULL && FilterSearchMgr::Instance()->ItemAttr(index,"is_word") == 1) {
 				//上一次是一个词组，把词组保存
 				stack_pop();
 				//i的值不用加
@@ -606,7 +612,7 @@ int GentFind::Match(string &str, std::vector<string> &ret) {
 		}
 	}
     if(tindex != -1) {
-        if(stack_s->head != NULL && GentFindMgr::Instance()->ItemAttr(index,"is_word") == 1){
+        if(stack_s->head != NULL && FilterSearchMgr::Instance()->ItemAttr(index,"is_word") == 1){
             stack_pop();
         }
     }

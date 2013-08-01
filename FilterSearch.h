@@ -99,19 +99,19 @@ public:
 	static size_t Wcstombs(char *buf,int buf_size,wchar_t *str); 	
 	static size_t Len(wchar_t *str);	
 };
-class GentFindMgr
+class FilterSearchMgr
 {
 	node **nodestable;
     nodestats_t nodestats;
 	int length;
-	static GentFindMgr *intance_;
+	static FilterSearchMgr *intance_;
 public:
-	static GentFindMgr *Instance();
+	static FilterSearchMgr *Instance();
 	static void UnInstance();
 public:
-	GentFindMgr();
-	~GentFindMgr();
-	void Init();
+	FilterSearchMgr();
+	~FilterSearchMgr();
+	uint32_t Init(const std::string &filename);
 	void ItemAdd(std::string &str);
 	void ItemCreate(wchar_t *,size_t);
     int ItemSearch(char *name,int base_index,int is_asc);

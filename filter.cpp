@@ -70,8 +70,12 @@ int main(int argc, char** argv) {
     TestHttpServletFactory servletFactory;
     HttpServer httpServer(SERVER_PORT, &servletFactory, &config);
     
-   	GentFindMgr::Instance()->Init(); 
-    //启动HttpServer
+   	uint32_t num = FilterSearchMgr::Instance()->Init("./key.txt"); 
+    cout << "the number of keys is " << num << endl;
+	if(num == 0) {
+		exit(0);
+	}
+	//启动HttpServer
     if(!httpServer.start()){
         return 1;
     }
