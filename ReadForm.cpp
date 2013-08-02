@@ -29,6 +29,7 @@ bool ReadForm::onReadBodyEvent(const char* buff, size_t n){
 	}    
 
 void ReadForm::service(Request& req, Response& resp){
+	LOG(Util::INFO, "request /search/");
 	resp.setContentType("text/html; charset=utf-8");
 	
 	std::vector<string> ret;

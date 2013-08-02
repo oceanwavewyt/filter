@@ -11,6 +11,7 @@
 //
 
 #include "FilterSearch.h"
+#include "Util.h"
 
 #include <fstream>
 
