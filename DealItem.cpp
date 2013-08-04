@@ -17,12 +17,14 @@ DealItem::~DealItem(){}
 
 void DealItem::service(Request& req, Response& resp){
 	const char *key = req.getParameter("key");    
-    resp.setContentType("text/html; charset=utf-8");
+  	cout << key << endl;
+ 	resp.setContentType("text/html; charset=utf-8");
 	string cont ="";
 	cont += key;
 	string str;
 	Util::URLDecode(cont, str);
 	Util::ReplaceSpace(str);
+	LOG(Util::INFO,"add item %s", str);
 	if(str=="") {
 		resp.write("data is null.");
 		return;
@@ -32,8 +34,10 @@ void DealItem::service(Request& req, Response& resp){
 	f.Search(str, ret);
 	if(ret.size() == 0) {
 		ofstream out;
-		out.open("key.txt",ios::app);
+		string filename = FilterSearchMgr::Instance()->GetFilename();
+		out.open(filename.c_str(),ios::app);
 		if(out.fail()) {
+			LOG(Util::ERROR,"open keyfile %s failed", filename.c_str());
 			resp.write("key.txt error");
 			return;
 		}

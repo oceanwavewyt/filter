@@ -28,7 +28,8 @@ public:
     virtual ~TestHttpServletFactory(){}
 
     virtual HttpServlet* create(const char* path){
-        if(strcmp(path, "/search") == 0 || strcmp(path, "/search/") == 0){
+        printf("%s\n",path);
+	if(strcmp(path, "/search") == 0 || strcmp(path, "/search/") == 0){
 			return new ReadForm();
 		}
 		else if(strcmp(path, "/add") == 0 || strcmp(path, "/add/") == 0){

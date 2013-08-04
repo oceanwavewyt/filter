@@ -34,7 +34,7 @@ void *GentFindUtil::Gmalloc(size_t size) {
 	void *p;
 	p = malloc(size);             
 	if(!p) {
-		printf("malloc failed\n");
+		LOG(Util::ERROR,"malloc size:%u failed", size);
 		return 0;                 
 	}
 	memset(p,0,size);
@@ -45,7 +45,7 @@ void *GentFindUtil::Gcalloc(size_t size,int len) {
     void *p;
     p = calloc(size,len);
     if(!p) {
-        printf("calloc failed\n");
+	LOG(Util::ERROR,"calloc size:%u,len:%d failed", size, len);
         exit(0);
     }
     return p;
@@ -60,7 +60,7 @@ void GentFindUtil::Gfree(void *p) {
 int GentFindUtil::Charwchar(char *str,int len,wchar_t *out) {
 	int ret = mbstowcs(out,str,len);
 	if(ret == -1) {
-		printf("charwchar failed \n");  
+		LOG(Util::ERROR,"charwchar failed:%s", str);
 	}
 	return ret;
 }   
@@ -72,7 +72,7 @@ size_t GentFindUtil::Len(wchar_t *str) {
 size_t GentFindUtil::Wcstombs(char *buf,int buf_size,wchar_t *str) {
 	size_t ntotal = wcstombs(buf,str,buf_size);
 	if(ntotal == 0) {
-		printf("wcstombs failed \n");                           
+		LOG(Util::ERROR,"wcstombs failed:%s", buf);               
 	}
 	*(buf+buf_size-1)='\0';
 	return ntotal;                                              
@@ -175,6 +175,7 @@ uint32_t FilterSearchMgr::Init(const std::string &fileKeyName) {
 		printf("%s file no exit\n",fileKeyName.c_str());
 		exit(0);
 	}
+	filename = fileKeyName;
 	char *oneLine=(char *)malloc(sizeof(char)*bufsize);
 	uint32_t num = 0;
 	while(fgets(oneLine,bufsize,fp)!=NULL){
@@ -204,6 +205,10 @@ uint32_t FilterSearchMgr::Init(const std::string &fileKeyName) {
     // exit(1);
 }
 
+const string &FilterSearchMgr::GetFilename()
+{
+	return filename;
+}
                                                                      
 
 //分配内存                                               
@@ -618,12 +623,18 @@ int GentFind::Match(string &str, std::vector<string> &ret) {
         }
     }
     item_ret *ret_it = ret_s->head;
+    string laststr = "";
+    string sp = "";
     while(ret_it) {
-        printf("find: %s\n",ret_it->key);
-		ret.push_back(string(ret_it->key));
+	ret.push_back(string(ret_it->key));
+	laststr += sp + string(ret_it->key);
+	sp = ",";
         rsize += strlen(ret_it->key);
         rsize++;
         ret_it = ret_it->next;
+    }
+    if(laststr != "") {
+    	LOG(Util::INFO,"filter exist keys are %s", laststr.c_str());
     }
     free(buff);
     return rsize;

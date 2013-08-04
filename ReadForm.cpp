@@ -53,6 +53,7 @@ void ReadForm::service(Request& req, Response& resp){
 	*/
 	vector<const char*> bnames;
 	bodyParams.getNames(bnames);
+	int iscontent  = 0;
 	for(vector<const char*>::const_iterator it = bnames.begin(); it != bnames.end(); it++){
 		if(strncmp(*it, "content",7) != 0) continue;
 		string cont="";
@@ -65,12 +66,20 @@ void ReadForm::service(Request& req, Response& resp){
 		Util::URLDecode(cont, str);
 		GentFind f;
 		f.Search(str, ret);
+		iscontent = 1;
 		break;
 	}
+	if(iscontent == 0) {
+		LOG(Util::WARN,"/search/ not content param");
+		resp.write("not content param");
+		return;
+	}
 	if(ret.size() > 0) {
-		for(size_t i=0;i<ret.size();i++) {
+		string sp = "";
+		for(size_t i=0;i<ret.size();i++) {	
+			resp.write(sp.c_str());
 			resp.write(ret[i].c_str());
-			resp.write("<br>");
+			sp = ",";
 		}
 	}else{
 		resp.write("not found");
