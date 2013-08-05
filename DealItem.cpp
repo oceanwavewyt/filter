@@ -24,7 +24,7 @@ void DealItem::service(Request& req, Response& resp){
 	string str;
 	Util::URLDecode(cont, str);
 	Util::ReplaceSpace(str);
-	LOG(Util::INFO,"add item %s", str);
+	LOG(Util::INFO,"add item %s", str.c_str());
 	if(str=="") {
 		resp.write("data is null.");
 		return;
@@ -47,7 +47,7 @@ void DealItem::service(Request& req, Response& resp){
 		FilterSearchMgr::Instance()->ItemAdd(str);	
 		std::vector<string> exvect;
 		f.Search(str, exvect);
-				string r = (exvect.size()>0)?"success":"failed";
+		string r = (exvect.size()>0)?"success":"failed";
 		resp.write(r.c_str());
 	}else{
 		resp.write("exist");
