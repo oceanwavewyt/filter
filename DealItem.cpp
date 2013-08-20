@@ -46,6 +46,7 @@ void DealItem::service(Request& req, Response& resp){
 		//添加进内存
 		FilterSearchMgr::Instance()->ItemAdd(str);	
 		std::vector<string> exvect;
+		GentFind f;
 		f.Search(str, exvect);
 		string r = (exvect.size()>0)?"success":"failed";
 		resp.write(r.c_str());

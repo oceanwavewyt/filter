@@ -180,8 +180,10 @@ uint32_t FilterSearchMgr::Init(const std::string &fileKeyName) {
 	uint32_t num = 0;
 	while(fgets(oneLine,bufsize,fp)!=NULL){
         string iterm(oneLine, strlen(oneLine));
-       // iterm = GentUtil::Trim(iterm);
-     	ItemAdd(iterm);
+        Util::ReplaceSpace(iterm);
+		//iterm = GentFindUtil::Trim(iterm);
+     	if(iterm == "") continue;
+		ItemAdd(iterm);
 		num++;
 	}
 	fclose(fp);
