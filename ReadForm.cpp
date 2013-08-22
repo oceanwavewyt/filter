@@ -69,6 +69,7 @@ void ReadForm::service(Request& req, Response& resp){
 		iscontent = 1;
 		break;
 	}
+	LOG(Util::WARN,"ok");
 	if(iscontent == 0) {
 		LOG(Util::WARN,"/search/ not content param");
 		resp.write("not content param");
@@ -81,6 +82,8 @@ void ReadForm::service(Request& req, Response& resp){
 			resp.write(ret[i].c_str());
 			sp = ",";
 		}
+		LOG(Util::WARN,"respose over.");
+		return;
 	}else{
 		resp.write("not found");
 	}

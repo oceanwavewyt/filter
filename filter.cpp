@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
 
 
 	Config config;
-    config.workProcessCount = 1;
+    config.workProcessCount = 8;
 	if(!Util::setfd("filter.log")) {
  	    cout << " open filter.log error."<<endl;
     	return 1;

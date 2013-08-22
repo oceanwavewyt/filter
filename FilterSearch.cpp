@@ -25,7 +25,7 @@ FilterSearchMgr *FilterSearchMgr::Instance() {
 }
 
 FilterSearchMgr::FilterSearchMgr():nodestable(0),
-	length(1000){
+	length(1000),totalLine(0) {
 }
 FilterSearchMgr::~FilterSearchMgr(){
 }
@@ -175,17 +175,26 @@ uint32_t FilterSearchMgr::Init(const std::string &fileKeyName) {
 		printf("%s file no exit\n",fileKeyName.c_str());
 		exit(0);
 	}
+	struct stat fileStats;
+	if(stat(fileKeyName.c_str(), &fileStats) != 0) {
+		cout << fileKeyName << " stat failed " << endl;
+		exit(0);
+	}
+	filemtime = fileStats.st_mtime;
+	cout << "filemtime: " << filemtime << endl;
 	filename = fileKeyName;
 	char *oneLine=(char *)malloc(sizeof(char)*bufsize);
 	uint32_t num = 0;
 	while(fgets(oneLine,bufsize,fp)!=NULL){
         string iterm(oneLine, strlen(oneLine));
         Util::ReplaceSpace(iterm);
+		totalLine++;
 		//iterm = GentFindUtil::Trim(iterm);
      	if(iterm == "") continue;
 		ItemAdd(iterm);
 		num++;
 	}
+	free(oneLine);
 	fclose(fp);
 	return num;
 	/*
@@ -212,6 +221,37 @@ const string &FilterSearchMgr::GetFilename()
 	return filename;
 }
                                                                      
+void FilterSearchMgr::CheckAddItem()
+{
+	struct stat fileStats;                             
+	if(stat(filename.c_str(), &fileStats) != 0) {   
+		LOG(Util::ERROR,"%s stat failed", filename.c_str());
+    	return;                                       
+	}                                                  
+	if(fileStats.st_mtime <= filemtime) return;
+	setlocale(LC_ALL, "zh_CN.UTF-8");
+	FILE *fp;
+	int bufsize=120;
+	if((fp=fopen(filename.c_str(),"r"))==NULL){
+		LOG(Util::ERROR,"%s fopen failed", filename.c_str());
+		return;
+	}
+	filemtime = fileStats.st_mtime;
+	char *oneLine=(char *)malloc(sizeof(char)*bufsize);
+	uint32_t num = 0;
+	while(fgets(oneLine,bufsize,fp)!=NULL){
+		num++;
+        if(totalLine <= num) continue;
+		string iterm(oneLine, strlen(oneLine));
+        Util::ReplaceSpace(iterm);
+		totalLine++;
+		//iterm = GentFindUtil::Trim(iterm);
+     	if(iterm == "") continue;
+		ItemAdd(iterm);
+	}
+	free(oneLine);
+	fclose(fp);	
+}
 
 //分配内存                                               
 void  FilterSearchMgr::IncreMemary(int cur_len)                   
@@ -530,6 +570,7 @@ void GentFind::stack_pop() {
 }
 
 void GentFind::Search(string &str, std::vector<string> &ret) {
+	FilterSearchMgr::Instance()->CheckAddItem();
 	string special[4] = {"\t"," ","\r"};
     string rep = "\n";
     for(int i=0; i<4; i++) {

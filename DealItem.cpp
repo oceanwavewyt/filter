@@ -52,7 +52,8 @@ void DealItem::service(Request& req, Response& resp){
 		resp.write(r.c_str());
 	}else{
 		resp.write("exist");
-	}                                      
+	}
+	resp.complete();                                      
 }
  
 

@@ -105,6 +105,8 @@ class FilterSearchMgr
     nodestats_t nodestats;
 	int length;
 	string filename;
+	time_t filemtime;
+	uint32_t totalLine;
 	static FilterSearchMgr *intance_;
 public:
 	static FilterSearchMgr *Instance();
@@ -118,6 +120,7 @@ public:
     int ItemSearch(char *name,int base_index,int is_asc);
 	short ItemAttr(int index,const string &field);
 	const string &GetFilename();
+	void CheckAddItem();
 private:
 	int NodesAdd(char *name,int index,int is_asc);
 	node *NodeSet(int base,int check,int account,const char *name,short is_word);
