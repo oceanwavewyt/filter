@@ -16,6 +16,19 @@ DealItem::DealItem(){}
 DealItem::~DealItem(){
 }
 
+bool DealItem::AppendKeyFile(string &filename, string &str)
+{
+	ofstream out;
+	out.open(filename.c_str(),ios::app);
+	if(out.fail()) {
+		LOG(Util::ERROR,"open keyfile %s failed", filename.c_str());
+		return false;
+	}
+	out << str << "\n";
+	out.close();
+	return true;
+}
+
 void DealItem::service(Request& req, Response& resp){
 	const char *key = req.getParameter("key");    
   	cout << key << endl;
@@ -34,16 +47,16 @@ void DealItem::service(Request& req, Response& resp){
     GentFind f;        
 	f.Search(str, ret);
 	if(ret.size() == 0) {
-		ofstream out;
 		string filename = FilterSearchMgr::Instance()->GetFilename();
-		out.open(filename.c_str(),ios::app);
-		if(out.fail()) {
-			LOG(Util::ERROR,"open keyfile %s failed", filename.c_str());
-			resp.write("key.txt error");
+		if(!AppendKeyFile(filename, str)) {
+			resp.write("filename error");
 			return;
 		}
-		out << str << "\n";
-		out.close();
+		filename = FilterSearchMgr::Instance()->GetFileAddName();
+		if(!AppendKeyFile(filename, str)) {
+			resp.write("filename error");
+			return;
+		}
 		//添加进内存
 		FilterSearchMgr::Instance()->ItemAdd(str);	
 		std::vector<string> exvect;

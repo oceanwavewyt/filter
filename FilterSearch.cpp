@@ -157,11 +157,24 @@ void FilterSearchMgr::ItemAdd(string &iterm) {
   ItemCreate(tmp,wc_len);                                      
 }
 
+void FilterSearchMgr::SetAddFile(const std::string &fileKeyName)
+{
+	string::size_type pos = fileKeyName.rfind("/");
+	fileAddName = "./add.txt";
+	if(pos != string::npos) {
+		fileAddName = fileKeyName.substr(0,pos) + "/add.txt";
+	}
+	ofstream fout;
+	fout.open(fileAddName.c_str(), ios::trunc|ios::out);
+	fout.close();	
+}
+
 uint32_t FilterSearchMgr::Init(const std::string &fileKeyName) {
 	if(access(fileKeyName.c_str(),0)==-1) {
 		cout << fileKeyName << " file not exist" << endl;
 		return 0;
 	}
+	SetAddFile(fileKeyName);
 	nodestable = (node**)GentFindUtil::Gmalloc(length*sizeof(node *));
 	memset(nodestable,0,length*sizeof(node *));   
 	nodestable[0] = NodeSet(1,1,0,"",0);
@@ -176,8 +189,8 @@ uint32_t FilterSearchMgr::Init(const std::string &fileKeyName) {
 		exit(0);
 	}
 	struct stat fileStats;
-	if(stat(fileKeyName.c_str(), &fileStats) != 0) {
-		cout << fileKeyName << " stat failed " << endl;
+	if(stat(fileAddName.c_str(), &fileStats) != 0) {
+		cout << fileAddName << " stat failed " << endl;
 		exit(0);
 	}
 	filemtime = fileStats.st_mtime;
@@ -188,7 +201,6 @@ uint32_t FilterSearchMgr::Init(const std::string &fileKeyName) {
 	while(fgets(oneLine,bufsize,fp)!=NULL){
         string iterm(oneLine, strlen(oneLine));
         Util::ReplaceSpace(iterm);
-		totalLine++;
 		//iterm = GentFindUtil::Trim(iterm);
      	if(iterm == "") continue;
 		ItemAdd(iterm);
@@ -220,31 +232,40 @@ const string &FilterSearchMgr::GetFilename()
 {
 	return filename;
 }
-                                                                     
+
+const string &FilterSearchMgr::GetFileAddName()
+{
+	return fileAddName;
+}
+                                                                    
 void FilterSearchMgr::CheckAddItem()
 {
 	struct stat fileStats;                             
-	if(stat(filename.c_str(), &fileStats) != 0) {   
-		LOG(Util::ERROR,"%s stat failed", filename.c_str());
+	if(stat(fileAddName.c_str(), &fileStats) != 0) {   
+		LOG(Util::ERROR,"%s stat failed", fileAddName.c_str());
     	return;                                       
 	}                                                  
 	if(fileStats.st_mtime <= filemtime) return;
 	setlocale(LC_ALL, "zh_CN.UTF-8");
 	FILE *fp;
 	int bufsize=120;
-	if((fp=fopen(filename.c_str(),"r"))==NULL){
-		LOG(Util::ERROR,"%s fopen failed", filename.c_str());
+	if((fp=fopen(fileAddName.c_str(),"r"))==NULL){
+		LOG(Util::ERROR,"%s fopen failed", fileAddName.c_str());
 		return;
 	}
 	filemtime = fileStats.st_mtime;
 	char *oneLine=(char *)malloc(sizeof(char)*bufsize);
 	uint32_t num = 0;
 	while(fgets(oneLine,bufsize,fp)!=NULL){
-		num++;
-        if(totalLine <= num) continue;
+        if(totalLine < num){
+			num++;
+			continue;
+		}
 		string iterm(oneLine, strlen(oneLine));
         Util::ReplaceSpace(iterm);
+		num++;
 		totalLine++;
+		cout << "add to list: " << iterm << endl;
 		//iterm = GentFindUtil::Trim(iterm);
      	if(iterm == "") continue;
 		ItemAdd(iterm);

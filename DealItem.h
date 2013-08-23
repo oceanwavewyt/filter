@@ -18,6 +18,8 @@ public:
     virtual ~DealItem();
     
     virtual void service(Request& req, Response& resp); 
+private:
+	bool AppendKeyFile(string &filename, string &cont);
 };
 
 #endif	/* HELLOHTTPSERVLET_H */
