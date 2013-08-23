@@ -13,7 +13,8 @@
 using namespace std;
 
 DealItem::DealItem(){}
-DealItem::~DealItem(){}
+DealItem::~DealItem(){
+}
 
 void DealItem::service(Request& req, Response& resp){
 	const char *key = req.getParameter("key");    
@@ -50,6 +51,7 @@ void DealItem::service(Request& req, Response& resp){
 		f.Search(str, exvect);
 		string r = (exvect.size()>0)?"success":"failed";
 		resp.write(r.c_str());
+		resp.setAsynAnswerMode(false);
 	}else{
 		resp.write("exist");
 	}

@@ -30,12 +30,11 @@ public:
     virtual HttpServlet* create(const char* path){
         printf("%s\n",path);
 	if(strcmp(path, "/search") == 0 || strcmp(path, "/search/") == 0){
-			return new ReadForm();
-		}
-		else if(strcmp(path, "/add") == 0 || strcmp(path, "/add/") == 0){
-   			return new DealItem();           
-		}
-		return new DealItem(); 
+		return new ReadForm();
+	}else if(strcmp(path, "/add") == 0 || strcmp(path, "/add/") == 0){
+   		return new DealItem();           
+	}
+	return new DealItem(); 
 		/*
 		if(strcmp(path, "/hello") == 0){
             return new HelloHttpServlet();

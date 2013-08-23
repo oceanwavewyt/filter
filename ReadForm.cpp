@@ -82,6 +82,7 @@ void ReadForm::service(Request& req, Response& resp){
 			resp.write(ret[i].c_str());
 			sp = ",";
 		}
+		resp.setAsynAnswerMode(false);
 		LOG(Util::WARN,"respose over.");
 		return;
 	}else{
